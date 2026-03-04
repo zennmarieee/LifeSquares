@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import AppHeader from '../components/AppHeader';
 import AppFooter from '../components/AppFooter';
 import BirthdateForm from '../components/BirthdateForm';
 import GridLegend from '../components/GridLegend';
@@ -54,8 +53,7 @@ function LifeSquaresPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center" style={{ fontFamily: 'Quicksand, sans-serif' }}>
-            <AppHeader />
+        <div className="min-h-screen flex flex-col items-center justify-center">
             <main className="flex flex-col items-center mt-12 w-full px-6">
                 <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-2 tracking-wide text-center">YOUR LIFE IN WEEKS</h2>
                 <p className="text-gray-500 text-center mb-6">Visualize your life week by week and plan intentionally.</p>
