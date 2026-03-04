@@ -1,4 +1,5 @@
-export const TOTAL_WEEKS = 4000;
+export const WEEKS_PER_YEAR = 52;
+export const DEFAULT_LIFESPAN_YEARS = 80;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const AVERAGE_LIFE_PHASES = [
@@ -81,7 +82,17 @@ export function calculateWeeksLived(birthdate) {
         return 0;
     }
 
-    return Math.min(TOTAL_WEEKS, Math.floor((now - born) / WEEK_MS));
+    return Math.floor((now - born) / WEEK_MS);
+}
+
+export function calculateTotalWeeks(lifespanYears) {
+    const years = Number(lifespanYears);
+
+    if (!Number.isFinite(years) || years <= 0) {
+        return DEFAULT_LIFESPAN_YEARS * WEEKS_PER_YEAR;
+    }
+
+    return Math.round(years * WEEKS_PER_YEAR);
 }
 
 export function getAveragePhaseForAge(age) {

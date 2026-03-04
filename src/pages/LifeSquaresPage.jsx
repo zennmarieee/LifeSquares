@@ -3,18 +3,37 @@ import AppHeader from '../components/AppHeader';
 import AppFooter from '../components/AppFooter';
 import BirthdateForm from '../components/BirthdateForm';
 import GridLegend from '../components/GridLegend';
+import LifespanSelector from '../components/LifespanSelector';
 import LifeGrid from '../components/LifeGrid';
 import LifeSummary from '../components/LifeSummary';
-import { TOTAL_WEEKS, calculateWeeksLived, parseBirthdate } from '../utils/lifeMath';
+import { calculateTotalWeeks, calculateWeeksLived, DEFAULT_LIFESPAN_YEARS, parseBirthdate } from '../utils/lifeMath';
 
 function LifeSquaresPage() {
     const [birthdateInput, setBirthdateInput] = useState('');
     const [selectedBirthdate, setSelectedBirthdate] = useState(null);
     const [error, setError] = useState('');
     const [showAveragePhases, setShowAveragePhases] = useState(false);
+    const [lifespanOption, setLifespanOption] = useState('80');
+    const [customLifespanYears, setCustomLifespanYears] = useState('85');
 
-    const weeksLived = useMemo(() => calculateWeeksLived(selectedBirthdate), [selectedBirthdate]);
-    const weeksRemaining = TOTAL_WEEKS - weeksLived;
+    const lifespanYears = useMemo(() => {
+        if (lifespanOption === 'custom') {
+            const customValue = Number(customLifespanYears);
+            if (Number.isFinite(customValue) && customValue > 0) {
+                return customValue;
+            }
+
+            return DEFAULT_LIFESPAN_YEARS;
+        }
+
+        return Number(lifespanOption);
+    }, [lifespanOption, customLifespanYears]);
+
+    const totalWeeks = useMemo(() => calculateTotalWeeks(lifespanYears), [lifespanYears]);
+
+    const rawWeeksLived = useMemo(() => calculateWeeksLived(selectedBirthdate), [selectedBirthdate]);
+    const weeksLived = Math.min(rawWeeksLived, totalWeeks);
+    const weeksRemaining = Math.max(totalWeeks - weeksLived, 0);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -39,16 +58,30 @@ function LifeSquaresPage() {
             <AppHeader />
             <main className="flex flex-col items-center mt-12 w-full px-6">
                 <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-2 tracking-wide text-center">YOUR LIFE IN WEEKS</h2>
-                <p className="text-gray-500 text-center mb-6">You have roughly 4,000 weeks. How will you spend them?</p>
+                <p className="text-gray-500 text-center mb-6">Visualize your life week by week and plan intentionally.</p>
                 <BirthdateForm
                     value={birthdateInput}
                     onChange={setBirthdateInput}
                     onSubmit={handleSubmit}
                 />
 
+                <LifespanSelector
+                    lifespanOption={lifespanOption}
+                    customYears={customLifespanYears}
+                    onOptionChange={setLifespanOption}
+                    onCustomYearsChange={setCustomLifespanYears}
+                />
+
                 {error && <p className="text-sm text-red-600 mb-6">{error}</p>}
 
-                {selectedBirthdate && !error && <LifeSummary weeksLived={weeksLived} weeksRemaining={weeksRemaining} />}
+                {selectedBirthdate && !error && (
+                    <LifeSummary
+                        weeksLived={weeksLived}
+                        weeksRemaining={weeksRemaining}
+                        totalWeeks={totalWeeks}
+                        lifespanYears={lifespanYears}
+                    />
+                )}
 
                 <label className="flex items-center gap-2 mb-6 text-sm text-gray-700 cursor-pointer">
                     <input
@@ -70,6 +103,7 @@ function LifeSquaresPage() {
                     weeksLived={weeksLived}
                     birthYear={selectedBirthdate ? selectedBirthdate.getFullYear() : null}
                     showAveragePhases={showAveragePhases}
+                    totalWeeks={totalWeeks}
                 />
 
                 <GridLegend showAveragePhases={showAveragePhases} />

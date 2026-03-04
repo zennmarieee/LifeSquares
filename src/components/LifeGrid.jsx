@@ -1,8 +1,13 @@
-import { getAveragePhaseForAge, TOTAL_WEEKS } from '../utils/lifeMath';
+import { getAveragePhaseForAge, WEEKS_PER_YEAR } from '../utils/lifeMath';
 
-function LifeGrid({ weeksLived, birthYear, showAveragePhases }) {
-    const weeksPerYear = 52;
-    const totalYears = Math.ceil(TOTAL_WEEKS / weeksPerYear);
+function LifeGrid({
+    weeksLived,
+    birthYear,
+    showAveragePhases,
+    totalWeeks,
+}) {
+    const totalYears = Math.ceil(totalWeeks / WEEKS_PER_YEAR);
+    const currentWeekIndex = birthYear && weeksLived < totalWeeks ? weeksLived : -1;
 
     return (
         <div className="w-full max-w-5xl overflow-x-auto pb-4 mb-8">
@@ -14,11 +19,11 @@ function LifeGrid({ weeksLived, birthYear, showAveragePhases }) {
                         </span>
 
                         <div className="grid grid-cols-[repeat(52,minmax(0,1fr))] gap-1 flex-1">
-                            {Array.from({ length: weeksPerYear }).map((__, weekInYear) => {
-                                const weekIndex = yearIndex * weeksPerYear + weekInYear;
-                                const ageAtWeek = Math.floor(weekIndex / weeksPerYear);
+                            {Array.from({ length: WEEKS_PER_YEAR }).map((__, weekInYear) => {
+                                const weekIndex = yearIndex * WEEKS_PER_YEAR + weekInYear;
+                                const ageAtWeek = Math.floor(weekIndex / WEEKS_PER_YEAR);
 
-                                if (weekIndex >= TOTAL_WEEKS) {
+                                if (weekIndex >= totalWeeks) {
                                     return <div key={weekInYear} className="aspect-square rounded-sm bg-transparent" />;
                                 }
 
@@ -31,11 +36,12 @@ function LifeGrid({ weeksLived, birthYear, showAveragePhases }) {
                                         : 'bg-gray-300';
 
                                 const livedStateClass = showAveragePhases && weekIndex >= weeksLived ? 'opacity-35' : '';
+                                const currentWeekClass = weekIndex === currentWeekIndex ? 'ring-2 ring-gray-900' : '';
 
                                 return (
                                     <div
                                         key={weekInYear}
-                                        className={`aspect-square rounded-sm ${baseClass} ${livedStateClass}`}
+                                        className={`aspect-square rounded-sm ${baseClass} ${livedStateClass} ${currentWeekClass}`}
                                         title={showAveragePhases ? `Week ${weekIndex + 1} • ${phase.label}` : `Week ${weekIndex + 1}`}
                                     ></div>
                                 );
