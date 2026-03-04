@@ -19,7 +19,7 @@ function LifeSquaresPage() {
 
         const parsedDate = parseBirthdate(birthdateInput);
         if (!parsedDate) {
-            setError('Please enter a valid birthdate in mm/dd/yyyy format.');
+            setError('Please select a valid birthdate (or type it as mm/dd/yyyy).');
             return;
         }
 
@@ -57,12 +57,6 @@ function LifeSquaresPage() {
                 <LifeGrid weeksLived={weeksLived} />
 
                 <GridLegend />
-
-                <div className="flex justify-center gap-2">
-                    {[...Array(9)].map((_, i) => (
-                        <div key={i} className="w-8 h-8 bg-gray-300 rounded"></div>
-                    ))}
-                </div>
             </main>
             <footer className="w-full mt-auto bg-gray-800 h-16"></footer>
         </div>

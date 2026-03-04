@@ -1,16 +1,7 @@
 export const TOTAL_WEEKS = 4000;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function parseBirthdate(value) {
-    const match = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (!match) {
-        return null;
-    }
-
-    const month = Number(match[1]);
-    const day = Number(match[2]);
-    const year = Number(match[3]);
-
+function buildDate(year, month, day) {
     const date = new Date(year, month - 1, day);
     if (
         date.getFullYear() !== year ||
@@ -21,6 +12,30 @@ export function parseBirthdate(value) {
     }
 
     return date;
+}
+
+export function parseBirthdate(value) {
+    const trimmedValue = value.trim();
+
+    const slashFormatMatch = trimmedValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashFormatMatch) {
+        const month = Number(slashFormatMatch[1]);
+        const day = Number(slashFormatMatch[2]);
+        const year = Number(slashFormatMatch[3]);
+
+        return buildDate(year, month, day);
+    }
+
+    const dashFormatMatch = trimmedValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dashFormatMatch) {
+        const year = Number(dashFormatMatch[1]);
+        const month = Number(dashFormatMatch[2]);
+        const day = Number(dashFormatMatch[3]);
+
+        return buildDate(year, month, day);
+    }
+
+    return null;
 }
 
 export function calculateWeeksLived(birthdate) {
