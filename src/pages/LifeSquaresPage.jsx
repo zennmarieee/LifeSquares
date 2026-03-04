@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import AppHeader from '../components/AppHeader';
+import AppFooter from '../components/AppFooter';
 import BirthdateForm from '../components/BirthdateForm';
 import GridLegend from '../components/GridLegend';
 import LifeGrid from '../components/LifeGrid';
@@ -73,7 +74,7 @@ function LifeSquaresPage() {
 
                 <GridLegend showAveragePhases={showAveragePhases} />
             </main>
-            <footer className="w-full mt-auto bg-gray-800 h-16"></footer>
+            <AppFooter />
         </div>
     );
 }
