@@ -54,7 +54,10 @@ function LifeSquaresPage() {
                     <span className="text-5xl">❤️</span>
                 </div>
 
-                <LifeGrid weeksLived={weeksLived} />
+                <LifeGrid
+                    weeksLived={weeksLived}
+                    birthYear={selectedBirthdate ? selectedBirthdate.getFullYear() : null}
+                />
 
                 <GridLegend />
             </main>
