@@ -1,16 +1,84 @@
-# React + Vite
+# LifeSquares
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LifeSquares is a web-based life visualization app that represents a lifespan as a grid of weekly squares.
+Each square equals one week, turning time into something tangible and reflective.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Accepts a birthdate (date picker + typed input support)
+- Calculates weeks lived and weeks remaining from a 4,000-week model
+- Displays a life grid with per-row labels:
+	- Left: Age (starts at 0)
+	- Right: Calendar year (based on selected birth year)
+- Supports two grid modes:
+	- Standard mode: lived vs remaining
+	- Typical average life phases mode: color-coded phase ranges
 
-## React Compiler
+## Typical phase color coding
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+When enabled, the grid can display a suggested phase model:
 
-## Expanding the ESLint configuration
+- Childhood (0–12)
+- Teen & Early Adult (13–24)
+- Working Years (25–64)
+- Retirement & Later Life (65+)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Future weeks are shown as faded in this mode.
+
+## Tech stack
+
+- React
+- Vite
+- Tailwind CSS (via `@tailwindcss/vite`)
+
+## Run locally
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Start development server
+
+```bash
+npm run dev
+```
+
+3. Build for production
+
+```bash
+npm run build
+```
+
+4. Preview production build
+
+```bash
+npm run preview
+```
+
+## Project structure
+
+```text
+src/
+	components/
+		AppHeader.jsx
+		BirthdateForm.jsx
+		GridLegend.jsx
+		LifeGrid.jsx
+		LifeSummary.jsx
+	pages/
+		LifeSquaresPage.jsx
+	utils/
+		lifeMath.js
+	App.jsx
+	index.css
+	main.jsx
+```
+
+## Notes
+
+- Primary lifespan model uses `TOTAL_WEEKS = 4000`.
+- Fonts used in UI:
+	- Playfair Display (logo)
+	- Quicksand (body text)
