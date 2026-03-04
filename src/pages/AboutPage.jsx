@@ -39,7 +39,7 @@ function AboutPage() {
                         visitors to remember.
                     </p>
                     <p className="text-sm text-gray-500">
-                        Tip: edit this text anytime to make your About page feel more personal.
+                        Thanks for visiting LifeSquares — I hope it helps you make each week a little more meaningful.
                     </p>
                 </section>
             </div>
