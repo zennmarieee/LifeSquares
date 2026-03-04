@@ -82,3 +82,7 @@ src/
 - Fonts used in UI:
 	- Playfair Display (logo)
 	- Quicksand (body text)
+
+## Planned
+
+- Weekly journal per week-square is intentionally deferred and planned for a future phase.

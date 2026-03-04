@@ -24,7 +24,7 @@ function LifeGrid({
                                 const ageAtWeek = Math.floor(weekIndex / WEEKS_PER_YEAR);
 
                                 if (weekIndex >= totalWeeks) {
-                                    return <div key={weekInYear} className="aspect-square rounded-sm bg-transparent" />;
+                                    return <div key={weekInYear} className="week-cell aspect-square bg-transparent" />;
                                 }
 
                                 const phase = getAveragePhaseForAge(ageAtWeek);
@@ -41,7 +41,7 @@ function LifeGrid({
                                 return (
                                     <div
                                         key={weekInYear}
-                                        className={`aspect-square rounded-sm ${baseClass} ${livedStateClass} ${currentWeekClass}`}
+                                        className={`week-cell aspect-square ${baseClass} ${livedStateClass} ${currentWeekClass}`}
                                         title={showAveragePhases ? `Week ${weekIndex + 1} • ${phase.label}` : `Week ${weekIndex + 1}`}
                                     ></div>
                                 );
