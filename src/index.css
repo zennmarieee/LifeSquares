@@ -3,11 +3,11 @@
 @import "tailwindcss";
 
 .week-cell {
-	border-radius: 4px;
+  border-radius: 4px;
 }
 
 @media (max-width: 640px) {
-	.week-cell {
-		border-radius: 1px;
-	}
+  .week-cell {
+    border-radius: 1px;
+  }
 }
