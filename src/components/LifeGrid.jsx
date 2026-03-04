@@ -1,6 +1,6 @@
-import { TOTAL_WEEKS } from '../utils/lifeMath';
+import { getAveragePhaseForAge, TOTAL_WEEKS } from '../utils/lifeMath';
 
-function LifeGrid({ weeksLived, birthYear }) {
+function LifeGrid({ weeksLived, birthYear, showAveragePhases }) {
     const weeksPerYear = 52;
     const totalYears = Math.ceil(TOTAL_WEEKS / weeksPerYear);
 
@@ -16,16 +16,27 @@ function LifeGrid({ weeksLived, birthYear }) {
                         <div className="grid grid-cols-[repeat(52,minmax(0,1fr))] gap-1 flex-1">
                             {Array.from({ length: weeksPerYear }).map((__, weekInYear) => {
                                 const weekIndex = yearIndex * weeksPerYear + weekInYear;
+                                const ageAtWeek = Math.floor(weekIndex / weeksPerYear);
 
                                 if (weekIndex >= TOTAL_WEEKS) {
                                     return <div key={weekInYear} className="aspect-square rounded-sm bg-transparent" />;
                                 }
 
+                                const phase = getAveragePhaseForAge(ageAtWeek);
+
+                                const baseClass = showAveragePhases
+                                    ? phase.colorClass
+                                    : weekIndex < weeksLived
+                                        ? 'bg-gray-800'
+                                        : 'bg-gray-300';
+
+                                const livedStateClass = showAveragePhases && weekIndex >= weeksLived ? 'opacity-35' : '';
+
                                 return (
                                     <div
                                         key={weekInYear}
-                                        className={`aspect-square rounded-sm ${weekIndex < weeksLived ? 'bg-gray-800' : 'bg-gray-300'}`}
-                                        title={`Week ${weekIndex + 1}`}
+                                        className={`aspect-square rounded-sm ${baseClass} ${livedStateClass}`}
+                                        title={showAveragePhases ? `Week ${weekIndex + 1} • ${phase.label}` : `Week ${weekIndex + 1}`}
                                     ></div>
                                 );
                             })}

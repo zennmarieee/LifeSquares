@@ -1,6 +1,37 @@
 export const TOTAL_WEEKS = 4000;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
+export const AVERAGE_LIFE_PHASES = [
+    {
+        key: 'childhood',
+        label: 'Childhood (0-12)',
+        startAge: 0,
+        endAge: 12,
+        colorClass: 'bg-sky-300',
+    },
+    {
+        key: 'teen-young-adult',
+        label: 'Teen & Early Adult (13-24)',
+        startAge: 13,
+        endAge: 24,
+        colorClass: 'bg-emerald-300',
+    },
+    {
+        key: 'working-years',
+        label: 'Working Years (25-64)',
+        startAge: 25,
+        endAge: 64,
+        colorClass: 'bg-amber-300',
+    },
+    {
+        key: 'retirement-later',
+        label: 'Retirement & Later Life (65+)',
+        startAge: 65,
+        endAge: Number.POSITIVE_INFINITY,
+        colorClass: 'bg-violet-300',
+    },
+];
+
 function buildDate(year, month, day) {
     const date = new Date(year, month - 1, day);
     if (
@@ -51,4 +82,8 @@ export function calculateWeeksLived(birthdate) {
     }
 
     return Math.min(TOTAL_WEEKS, Math.floor((now - born) / WEEK_MS));
+}
+
+export function getAveragePhaseForAge(age) {
+    return AVERAGE_LIFE_PHASES.find((phase) => age >= phase.startAge && age <= phase.endAge) ?? AVERAGE_LIFE_PHASES[AVERAGE_LIFE_PHASES.length - 1];
 }

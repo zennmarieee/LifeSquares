@@ -10,6 +10,7 @@ function LifeSquaresPage() {
     const [birthdateInput, setBirthdateInput] = useState('');
     const [selectedBirthdate, setSelectedBirthdate] = useState(null);
     const [error, setError] = useState('');
+    const [showAveragePhases, setShowAveragePhases] = useState(false);
 
     const weeksLived = useMemo(() => calculateWeeksLived(selectedBirthdate), [selectedBirthdate]);
     const weeksRemaining = TOTAL_WEEKS - weeksLived;
@@ -48,6 +49,16 @@ function LifeSquaresPage() {
 
                 {selectedBirthdate && !error && <LifeSummary weeksLived={weeksLived} weeksRemaining={weeksRemaining} />}
 
+                <label className="flex items-center gap-2 mb-6 text-sm text-gray-700 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={showAveragePhases}
+                        onChange={(event) => setShowAveragePhases(event.target.checked)}
+                        className="h-4 w-4"
+                    />
+                    Show typical average life phases
+                </label>
+
                 <div className="flex justify-center items-center gap-12 mb-8">
                     <span className="text-5xl">🎓</span>
                     <span className="text-5xl">🏢</span>
@@ -57,9 +68,10 @@ function LifeSquaresPage() {
                 <LifeGrid
                     weeksLived={weeksLived}
                     birthYear={selectedBirthdate ? selectedBirthdate.getFullYear() : null}
+                    showAveragePhases={showAveragePhases}
                 />
 
-                <GridLegend />
+                <GridLegend showAveragePhases={showAveragePhases} />
             </main>
             <footer className="w-full mt-auto bg-gray-800 h-16"></footer>
         </div>
