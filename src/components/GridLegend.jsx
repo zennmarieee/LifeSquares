@@ -7,19 +7,18 @@ const PHASE_COLORS = {
     'retirement-later': '#c4b5fd',
 };
 
-function Swatch({ color, border }) {
+function Swatch({ color, border, outline }) {
     return (
-        <span
-            style={{
-                display: 'inline-block',
-                width: 12,
-                height: 12,
-                borderRadius: 3,
-                background: color,
-                border: border ? '1px solid #cbd5e1' : 'none',
-                flexShrink: 0,
-            }}
-        />
+        <span style={{
+            display: 'inline-block',
+            width: 12, height: 12,
+            borderRadius: 3,
+            background: color,
+            border: border ? `1px solid ${border}` : 'none',
+            outline: outline ? `2px solid ${outline}` : 'none',
+            outlineOffset: '1px',
+            flexShrink: 0,
+        }} />
     );
 }
 
@@ -34,8 +33,8 @@ function GridLegend({ showAveragePhases }) {
                     </div>
                 ))}
                 <div className="flex items-center gap-1.5">
-                    <Swatch color="#fcd34d" />
-                    <span style={{ opacity: 0.4 }}>Future weeks (faded)</span>
+                    <Swatch color="#e2e8f0" border="#cbd5e1" />
+                    <span>Future (faded)</span>
                 </div>
             </div>
         );
@@ -48,11 +47,15 @@ function GridLegend({ showAveragePhases }) {
                 <span>Weeks lived</span>
             </div>
             <div className="flex items-center gap-1.5">
+                <Swatch color="#16a34a" outline="#15803d" />
+                <span>Journaled week</span>
+            </div>
+            <div className="flex items-center gap-1.5">
                 <Swatch color="#111827" />
                 <span>Current week</span>
             </div>
             <div className="flex items-center gap-1.5">
-                <Swatch color="#e2e8f0" border />
+                <Swatch color="#e2e8f0" border="#cbd5e1" />
                 <span>Weeks remaining</span>
             </div>
         </div>
