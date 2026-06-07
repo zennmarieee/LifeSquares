@@ -2,65 +2,91 @@ import { useState } from 'react';
 import { toPng } from 'html-to-image';
 
 function ShareGridButton({ gridRef, weeksLived, totalWeeks, lifespanYears, birthdate }) {
-    const [state, setState] = useState('idle'); // idle | generating | done | error
+    const [state, setState] = useState('idle');
 
     const pct = totalWeeks > 0 ? ((weeksLived / totalWeeks) * 100).toFixed(1) : '0.0';
 
     const handleExport = async () => {
-        if (!gridRef?.current) return;
+        if (!gridRef?.current) {
+            alert('Grid not ready yet. Please enter your birthdate first.');
+            return;
+        }
         setState('generating');
 
         try {
-            // Wrap the grid in a styled container for the export
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText = `
-                position: fixed;
-                top: -9999px;
-                left: -9999px;
-                background: #ffffff;
-                padding: 32px;
-                border-radius: 16px;
-                width: ${gridRef.current.offsetWidth + 64}px;
-                font-family: Inter, system-ui, sans-serif;
-            `;
+            // Use the grid container directly — simpler and more reliable
+            const dataUrl = await toPng(gridRef.current, {
+                pixelRatio: 2,
+                cacheBust: true,
+                backgroundColor: '#ffffff',
+                style: {
+                    padding: '16px',
+                    borderRadius: '12px',
+                },
+            });
 
-            // Header
-            const header = document.createElement('div');
-            header.style.cssText = 'margin-bottom: 16px;';
-            header.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                    <div style="width:24px;height:24px;background:#111827;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;">▦</div>
-                    <span style="font-size:14px;font-weight:600;color:#111827;">LifeSquares</span>
-                </div>
-                <div style="font-size:22px;font-weight:700;color:#111827;margin-bottom:2px;">
-                    ${pct}% of life lived
-                </div>
-                <div style="font-size:12px;color:#9ca3af;">
-                    ${weeksLived.toLocaleString()} weeks lived · ${(totalWeeks - weeksLived).toLocaleString()} remaining · ${lifespanYears} year expectancy
-                </div>
-            `;
+            // Build final image with header using canvas
+            const gridImg = new Image();
+            gridImg.src = dataUrl;
+            await new Promise((res) => { gridImg.onload = res; });
 
-            // Clone the grid
-            const gridClone = gridRef.current.cloneNode(true);
-            gridClone.style.width = gridRef.current.offsetWidth + 'px';
+            const PADDING   = 32;
+            const HEADER_H  = 80;
+            const FOOTER_H  = 32;
+            const W         = gridImg.width + PADDING * 2;
+            const H         = gridImg.height + HEADER_H + FOOTER_H + PADDING;
+
+            const canvas  = document.createElement('canvas');
+            canvas.width  = W;
+            canvas.height = H;
+            const ctx     = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, W, H);
+
+            // Logo box
+            ctx.fillStyle = '#111827';
+            roundRect(ctx, PADDING, PADDING, 28, 28, 6);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('▦', PADDING + 14, PADDING + 19);
+
+            // App name
+            ctx.fillStyle = '#111827';
+            ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('LifeSquares', PADDING + 36, PADDING + 18);
+
+            // Main stat
+            ctx.font = 'bold 22px Inter, system-ui, sans-serif';
+            ctx.fillStyle = '#111827';
+            ctx.fillText(`${pct}% of life lived`, PADDING + 36, PADDING + 44);
+
+            // Sub stat
+            ctx.font = '12px Inter, system-ui, sans-serif';
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText(
+                `${weeksLived.toLocaleString()} weeks lived · ${(totalWeeks - weeksLived).toLocaleString()} remaining · ${lifespanYears}yr expectancy`,
+                PADDING + 36,
+                PADDING + 62
+            );
+
+            // Grid image
+            ctx.drawImage(gridImg, PADDING, HEADER_H + PADDING / 2);
 
             // Footer
-            const footer = document.createElement('div');
-            footer.style.cssText = 'margin-top:16px; font-size:11px; color:#d1d5db; text-align:right;';
-            footer.textContent = 'lifesquares.app';
-
-            wrapper.appendChild(header);
-            wrapper.appendChild(gridClone);
-            wrapper.appendChild(footer);
-            document.body.appendChild(wrapper);
-
-            const dataUrl = await toPng(wrapper, { pixelRatio: 2, cacheBust: true });
-            document.body.removeChild(wrapper);
+            ctx.font = '11px Inter, system-ui, sans-serif';
+            ctx.fillStyle = '#d1d5db';
+            ctx.textAlign = 'right';
+            ctx.fillText('lifesquares.app', W - PADDING, H - 12);
 
             // Download
-            const link = document.createElement('a');
-            link.download = `lifesquares-${birthdate ? birthdate.getFullYear() : 'grid'}.png`;
-            link.href = dataUrl;
+            const link      = document.createElement('a');
+            link.download   = `lifesquares-${birthdate ? birthdate.getFullYear() : 'grid'}.png`;
+            link.href       = canvas.toDataURL('image/png');
             link.click();
 
             setState('done');
@@ -72,14 +98,29 @@ function ShareGridButton({ gridRef, weeksLived, totalWeeks, lifespanYears, birth
         }
     };
 
+    // Helper: rounded rect
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
     const labels = {
         idle:       '↗ Share grid',
         generating: 'Generating...',
         done:       '✓ Downloaded!',
-        error:      'Try again',
+        error:      'Failed — try again',
     };
 
-    const colors = {
+    const styles = {
         idle:       'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50',
         generating: 'bg-white border border-gray-200 text-gray-400 cursor-wait',
         done:       'bg-emerald-50 border border-emerald-200 text-emerald-700',
@@ -91,7 +132,7 @@ function ShareGridButton({ gridRef, weeksLived, totalWeeks, lifespanYears, birth
             type="button"
             onClick={handleExport}
             disabled={state === 'generating'}
-            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${colors[state]}`}
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${styles[state]}`}
         >
             {labels[state]}
         </button>

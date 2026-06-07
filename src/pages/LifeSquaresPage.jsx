@@ -6,12 +6,12 @@ import LifeGrid from '../components/LifeGrid';
 import LifeSummary from '../components/LifeSummary';
 import WeekJournalPanel from '../components/WeekJournalPanel';
 import ShareGridButton from '../components/ShareGridButton';
+import { snapToWeekStart, toDateStr, dateToWeekIndex } from '../utils/weekUtils';
 import {
     calculateTotalWeeks,
     calculateWeeksLived,
     DEFAULT_LIFESPAN_YEARS,
     parseBirthdate,
-    WEEKS_PER_YEAR,
 } from '../utils/lifeMath';
 import {
     loadJournalEntries,
@@ -21,31 +21,6 @@ import {
     loadLifespan,
     saveLifespan,
 } from '../utils/storage';
-
-function toDateInputValue(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-// Convert a date string (yyyy-mm-dd) to the week index from birthdate
-function dateToWeekIndex(dateStr, birthdate) {
-    if (!birthdate || !dateStr) return -1;
-    // Parse as LOCAL midnight — new Date('yyyy-mm-dd') would give UTC midnight
-    // which shifts the date back by timezone offset and breaks week alignment
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
-    // Also strip time from birthdate for a clean day-level comparison
-    const birth = new Date(
-        birthdate.getFullYear(),
-        birthdate.getMonth(),
-        birthdate.getDate()
-    );
-    const ms = date.getTime() - birth.getTime();
-    if (ms < 0) return -1;
-    return Math.floor(ms / (7 * 24 * 60 * 60 * 1000));
-}
 
 const NAV_ITEMS = [
     { id: 'grid',     label: 'Life Grid', icon: '▦' },
@@ -68,7 +43,10 @@ function LifeSquaresPage() {
     const [customLifespanYears, setCustomLifespanYears] = useState(savedLifespan?.customYears ?? '85');
 
     const [journalEntries, setJournalEntries] = useState(() => loadJournalEntries());
-    const [selectedJournalDate, setSelectedJournalDate] = useState(() => toDateInputValue(new Date()));
+    // Always initialize to the Monday of the current week
+    const [selectedJournalDate, setSelectedJournalDate] = useState(() =>
+        snapToWeekStart(toDateStr(new Date()))
+    );
 
     const lifespanYears = useMemo(() => {
         if (lifespanOption === 'custom') {
@@ -141,9 +119,14 @@ function LifeSquaresPage() {
         saveJournalEntries(next);
     };
 
+    // Snap to Monday before setting
+    const handleJournalDateChange = (dateStr) => {
+        setSelectedJournalDate(snapToWeekStart(dateStr));
+    };
+
     const entryCount = Object.keys(journalEntries).length;
 
-    // ── Stats view ────────────────────────────────────────────────────────────
+    // ── Stats view ──────────────────────────────────────────────────────────
     function StatsView() {
         const entriesByMood = Object.values(journalEntries).reduce((acc, e) => {
             acc[e.mood] = (acc[e.mood] ?? 0) + 1; return acc;
@@ -151,6 +134,18 @@ function LifeSquaresPage() {
         const entriesByMode = Object.values(journalEntries).reduce((acc, e) => {
             if (e.mode) { acc[e.mode] = (acc[e.mode] ?? 0) + 1; } return acc;
         }, {});
+
+        const streak = (() => {
+            const dates = Object.keys(journalEntries).sort((a, b) => b.localeCompare(a));
+            if (dates.length === 0) return 0;
+            let s = 1;
+            for (let i = 0; i < dates.length - 1; i++) {
+                const diff = (new Date(dates[i]) - new Date(dates[i + 1])) / (1000 * 60 * 60 * 24 * 7);
+                if (diff <= 1.5) s++;
+                else break;
+            }
+            return s;
+        })();
 
         return (
             <>
@@ -178,21 +173,9 @@ function LifeSquaresPage() {
                         </p>
                     </div>
                     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm">
-                        <p className="text-xs text-gray-400 mb-1">Streak</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                            {(() => {
-                                const dates = Object.keys(journalEntries).sort((a, b) => b.localeCompare(a));
-                                if (dates.length === 0) return 0;
-                                let streak = 1;
-                                for (let i = 0; i < dates.length - 1; i++) {
-                                    const diff = (new Date(dates[i]) - new Date(dates[i + 1])) / (1000 * 60 * 60 * 24 * 7);
-                                    if (diff <= 1.5) streak++;
-                                    else break;
-                                }
-                                return streak;
-                            })()}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">week streak</p>
+                        <p className="text-xs text-gray-400 mb-1">Week streak</p>
+                        <p className="text-2xl font-semibold text-gray-900">{streak}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">consecutive weeks</p>
                     </div>
                 </div>
 
@@ -243,10 +226,22 @@ function LifeSquaresPage() {
         );
     }
 
+    // ── Shared journal panel props ──────────────────────────────────────────
+    const journalPanelProps = {
+        selectedDate:   selectedJournalDate,
+        entry:          selectedJournalEntry,
+        onDateChange:   handleJournalDateChange,
+        onSave:         handleSaveJournalEntry,
+        onClear:        handleClearJournalEntry,
+        journalEntries,
+        onSelectEntry:  (date) => setSelectedJournalDate(snapToWeekStart(date)),
+        birthdate:      selectedBirthdate,
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50">
 
-            {/* ── LEFT SIDEBAR ───────────────────────────────────────────── */}
+            {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
             <aside className="hidden xl:flex flex-col fixed left-0 top-0 h-full w-52 z-10">
                 <div className="bg-white border-r border-gray-100 h-full flex flex-col justify-between py-5 px-4">
                     <div>
@@ -297,7 +292,7 @@ function LifeSquaresPage() {
                 </div>
             </aside>
 
-            {/* ── MAIN + RIGHT PANEL ─────────────────────────────────────── */}
+            {/* ── MAIN + RIGHT PANEL ───────────────────────────────────── */}
             <div className="xl:ml-52 flex min-h-screen pb-16 xl:pb-0">
 
                 {/* CENTER */}
@@ -306,7 +301,6 @@ function LifeSquaresPage() {
                         <StatsView />
                     ) : (
                         <>
-                            {/* Header */}
                             <div className="flex items-start justify-between mb-5">
                                 <div>
                                     <h1 className="text-3xl font-semibold text-gray-900 leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
@@ -327,7 +321,6 @@ function LifeSquaresPage() {
                                 )}
                             </div>
 
-                            {/* Controls */}
                             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-4 shadow-sm">
                                 <div className="flex flex-col lg:flex-row lg:items-end gap-3">
                                     <div className="flex-1">
@@ -354,7 +347,6 @@ function LifeSquaresPage() {
                                 )}
                             </div>
 
-                            {/* Stat cards */}
                             {selectedBirthdate && !error && (
                                 <LifeSummary
                                     weeksLived={weeksLived}
@@ -365,7 +357,6 @@ function LifeSquaresPage() {
                                 />
                             )}
 
-                            {/* Phase toggle */}
                             <div className="flex items-center mb-2.5">
                                 <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none">
                                     <input
@@ -378,7 +369,6 @@ function LifeSquaresPage() {
                                 </label>
                             </div>
 
-                            {/* Grid */}
                             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-3 shadow-sm">
                                 <LifeGrid
                                     ref={gridRef}
@@ -390,7 +380,6 @@ function LifeSquaresPage() {
                                 />
                             </div>
 
-                            {/* Legend */}
                             <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                                 <GridLegend showAveragePhases={showAveragePhases} />
                             </div>
@@ -401,26 +390,18 @@ function LifeSquaresPage() {
                 {/* RIGHT PANEL — always visible on desktop */}
                 <aside className="hidden xl:flex flex-col w-80 shrink-0 border-l border-gray-100 bg-white sticky top-0 h-screen overflow-y-auto">
                     <div className="p-4 space-y-3">
-                        <WeekJournalPanel
-                            selectedDate={selectedJournalDate}
-                            entry={selectedJournalEntry}
-                            onDateChange={setSelectedJournalDate}
-                            onSave={handleSaveJournalEntry}
-                            onClear={handleClearJournalEntry}
-                            journalEntries={journalEntries}
-                            onSelectEntry={setSelectedJournalDate}
-                        />
+                        <WeekJournalPanel {...journalPanelProps} />
                         <div className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
                             <h3 className="text-xs font-semibold text-gray-700 mb-1">About the Grid</h3>
                             <p className="text-xs text-gray-400 leading-relaxed">
-                                Darker green squares are weeks you've journaled. The grid is based on your life expectancy — you can change it anytime.
+                                Darker green squares are weeks you've journaled. Each square = one week of your life.
                             </p>
                         </div>
                     </div>
                 </aside>
             </div>
 
-            {/* ── MOBILE BOTTOM TAB BAR ──────────────────────────────────── */}
+            {/* ── MOBILE BOTTOM TAB BAR ────────────────────────────────── */}
             <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-100">
                 <div className="flex">
                     {[
@@ -447,18 +428,10 @@ function LifeSquaresPage() {
                 </div>
             </nav>
 
-            {/* MOBILE JOURNAL fullscreen overlay */}
+            {/* MOBILE JOURNAL fullscreen */}
             {activeNav === 'journal' && (
                 <div className="xl:hidden fixed inset-0 z-10 bg-gray-50 overflow-y-auto pb-20 pt-4 px-4">
-                    <WeekJournalPanel
-                        selectedDate={selectedJournalDate}
-                        entry={selectedJournalEntry}
-                        onDateChange={setSelectedJournalDate}
-                        onSave={handleSaveJournalEntry}
-                        onClear={handleClearJournalEntry}
-                        journalEntries={journalEntries}
-                        onSelectEntry={setSelectedJournalDate}
-                    />
+                    <WeekJournalPanel {...journalPanelProps} />
                 </div>
             )}
         </div>

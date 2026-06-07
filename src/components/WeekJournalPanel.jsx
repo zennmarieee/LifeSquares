@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { snapToWeekStart, formatWeekRange, getWeekNumber } from '../utils/weekUtils';
 
 const MODE_OPTIONS = ['Reflection', 'Work', 'Health', 'Learning', 'Family', 'Rest', 'Other'];
 
@@ -10,7 +11,22 @@ const MOODS = [
     { value: '😞', label: 'Tough' },
 ];
 
-function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
+function WeekBadge({ weekNumber, weekRange }) {
+    return (
+        <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mb-4">
+            <div className="flex items-center justify-between">
+                {weekNumber !== null && (
+                    <span className="text-xs font-semibold text-gray-700">
+                        Week #{weekNumber.toLocaleString()}
+                    </span>
+                )}
+                <span className="text-xs text-gray-400">{weekRange}</span>
+            </div>
+        </div>
+    );
+}
+
+function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear, birthdate }) {
     const [title, setTitle] = useState('');
     const [note, setNote] = useState('');
     const [mode, setMode] = useState('Reflection');
@@ -34,26 +50,43 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
         setTimeout(() => setSaved(false), 2000);
     };
 
+    // Snap to Monday on date change
+    const handleDateChange = (val) => {
+        onDateChange(snapToWeekStart(val));
+    };
+
     const tagList = tags.split(',').map((t) => t.trim()).filter(Boolean);
     const removeTag = (tag) => {
         setTags(tags.split(',').map((t) => t.trim()).filter((t) => t !== tag).join(', '));
     };
 
+    const weekNumber = getWeekNumber(selectedDate, birthdate);
+    const weekRange  = formatWeekRange(selectedDate);
+
     return (
         <form onSubmit={handleSave} className="space-y-4">
+            {/* Week badge */}
+            <WeekBadge weekNumber={weekNumber} weekRange={weekRange} />
+
+            {/* Hidden date picker — triggered via a button */}
             <div>
-                <label htmlFor="journalDate" className="block text-xs font-medium text-gray-500 mb-1.5">Entry date</label>
+                <label htmlFor="journalDate" className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Jump to week
+                </label>
                 <input
                     id="journalDate"
                     type="date"
                     value={selectedDate}
-                    onChange={(e) => onDateChange(e.target.value)}
+                    onChange={(e) => handleDateChange(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
                 />
             </div>
 
+            {/* Title */}
             <div>
-                <label htmlFor="journalTitle" className="block text-xs font-medium text-gray-500 mb-1.5">Title</label>
+                <label htmlFor="journalTitle" className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Title
+                </label>
                 <input
                     id="journalTitle"
                     type="text"
@@ -64,8 +97,11 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
                 />
             </div>
 
+            {/* Reflection */}
             <div>
-                <label htmlFor="journalNote" className="block text-xs font-medium text-gray-500 mb-1.5">Reflection</label>
+                <label htmlFor="journalNote" className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Reflection
+                </label>
                 <textarea
                     id="journalNote"
                     value={note}
@@ -76,6 +112,7 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
                 />
             </div>
 
+            {/* Mode + Tags */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label htmlFor="journalMode" className="block text-xs font-medium text-gray-500 mb-1.5">Mode</label>
@@ -101,6 +138,7 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
                 </div>
             </div>
 
+            {/* Tag chips */}
             {tagList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                     {tagList.map((tag) => (
@@ -112,6 +150,7 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
                 </div>
             )}
 
+            {/* Mood */}
             <div>
                 <p className="text-xs font-medium text-gray-500 mb-2">Mood</p>
                 <div className="flex gap-2">
@@ -131,6 +170,7 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
                 </div>
             </div>
 
+            {/* Actions */}
             <div className="flex items-center gap-3 pt-1">
                 <button type="submit" className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium">
                     Save entry
@@ -146,7 +186,7 @@ function WriteTab({ selectedDate, entry, onDateChange, onSave, onClear }) {
     );
 }
 
-function HistoryTab({ journalEntries, onSelect, selectedDate }) {
+function HistoryTab({ journalEntries, onSelect, selectedDate, birthdate }) {
     const entries = Object.entries(journalEntries).sort(([a], [b]) => b.localeCompare(a));
 
     if (entries.length === 0) {
@@ -161,36 +201,47 @@ function HistoryTab({ journalEntries, onSelect, selectedDate }) {
 
     return (
         <div className="space-y-2">
-            {entries.map(([date, e]) => (
-                <button
-                    key={date}
-                    type="button"
-                    onClick={() => onSelect(date)}
-                    className={`w-full text-left rounded-xl px-4 py-3 border transition-colors ${
-                        selectedDate === date ? 'border-gray-400 bg-gray-50' : 'border-gray-100 bg-white hover:border-gray-200'
-                    }`}
-                >
-                    <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-sm font-medium text-gray-800 truncate mr-2">{e.title || 'Untitled'}</span>
-                        <span className="text-xs text-gray-400 shrink-0">{date}</span>
-                    </div>
-                    {e.note && <p className="text-xs text-gray-400 line-clamp-1 mb-1">{e.note}</p>}
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm">{e.mood}</span>
-                        {e.mode && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{e.mode}</span>}
-                        {e.tags && (
-                            <span className="text-xs text-gray-400 truncate">
-                                {e.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => `#${t}`).join(' ')}
-                            </span>
-                        )}
-                    </div>
-                </button>
-            ))}
+            {entries.map(([date, e]) => {
+                const weekNum   = getWeekNumber(date, birthdate);
+                const weekRange = formatWeekRange(date);
+                return (
+                    <button
+                        key={date}
+                        type="button"
+                        onClick={() => onSelect(date)}
+                        className={`w-full text-left rounded-xl px-4 py-3 border transition-colors ${
+                            selectedDate === date ? 'border-gray-400 bg-gray-50' : 'border-gray-100 bg-white hover:border-gray-200'
+                        }`}
+                    >
+                        {/* Week label */}
+                        <div className="flex items-center justify-between mb-1">
+                            {weekNum && (
+                                <span className="text-xs font-semibold text-gray-500">Week #{weekNum.toLocaleString()}</span>
+                            )}
+                            <span className="text-xs text-gray-400">{weekRange}</span>
+                        </div>
+                        {/* Entry title */}
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                            {e.title || 'Untitled'}
+                        </p>
+                        {e.note && <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{e.note}</p>}
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-sm">{e.mood}</span>
+                            {e.mode && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{e.mode}</span>}
+                            {e.tags && (
+                                <span className="text-xs text-gray-400 truncate">
+                                    {e.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => `#${t}`).join(' ')}
+                                </span>
+                            )}
+                        </div>
+                    </button>
+                );
+            })}
         </div>
     );
 }
 
-function WeekJournalPanel({ selectedDate, entry, onSave, onClear, onDateChange, journalEntries, onSelectEntry }) {
+function WeekJournalPanel({ selectedDate, entry, onSave, onClear, onDateChange, journalEntries, onSelectEntry, birthdate }) {
     const [tab, setTab] = useState('write');
     const entryCount = Object.keys(journalEntries).length;
 
@@ -204,9 +255,10 @@ function WeekJournalPanel({ selectedDate, entry, onSave, onClear, onDateChange, 
             {/* Header */}
             <div className="px-5 pt-4 pb-0">
                 <div className="mb-3">
-                    {/* ✅ Fixed: Weekly Reflection, not Daily Journal */}
                     <h3 className="text-base font-semibold text-gray-900">Weekly Reflection</h3>
-                    <p className="text-xs text-gray-400">Saved locally · {entryCount} {entryCount === 1 ? 'entry' : 'entries'}</p>
+                    <p className="text-xs text-gray-400">
+                        Saved locally · {entryCount} {entryCount === 1 ? 'entry' : 'entries'}
+                    </p>
                 </div>
 
                 {/* Write / History tabs */}
@@ -240,12 +292,14 @@ function WeekJournalPanel({ selectedDate, entry, onSave, onClear, onDateChange, 
                         onDateChange={onDateChange}
                         onSave={onSave}
                         onClear={onClear}
+                        birthdate={birthdate}
                     />
                 ) : (
                     <HistoryTab
                         journalEntries={journalEntries}
                         onSelect={handleSelectEntry}
                         selectedDate={selectedDate}
+                        birthdate={birthdate}
                     />
                 )}
             </div>
