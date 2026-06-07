@@ -1,15 +1,22 @@
-function LifespanSelector({ lifespanOption, customYears, onOptionChange, onCustomYearsChange }) {
+function LifespanSelector({ lifespanOption, customYears, onOptionChange, onCustomYearsChange, dark = false }) {
+    const inputCls = `w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+        dark
+            ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-slate-500'
+            : 'bg-white border-gray-200 text-gray-900 focus:ring-gray-200'
+    }`;
+    const labelCls = `block text-xs font-medium mb-1.5 ${dark ? 'text-slate-400' : 'text-gray-500'}`;
+    const scheme   = { colorScheme: dark ? 'dark' : 'light' };
+
     return (
         <div className="flex gap-2.5 items-end">
             <div className="flex-1">
-                <label htmlFor="lifespanOption" className="block text-xs font-medium text-gray-500 mb-1.5">
-                    Lifespan target
-                </label>
+                <label htmlFor="lifespanOption" className={labelCls}>Lifespan target</label>
                 <select
                     id="lifespanOption"
                     value={lifespanOption}
                     onChange={(e) => onOptionChange(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className={inputCls}
+                    style={scheme}
                 >
                     <option value="75">75 years</option>
                     <option value="80">80 years</option>
@@ -20,9 +27,7 @@ function LifespanSelector({ lifespanOption, customYears, onOptionChange, onCusto
 
             {lifespanOption === 'custom' && (
                 <div className="w-28 shrink-0">
-                    <label htmlFor="customLifespan" className="block text-xs font-medium text-gray-500 mb-1.5">
-                        Years
-                    </label>
+                    <label htmlFor="customLifespan" className={labelCls}>Years</label>
                     <input
                         id="customLifespan"
                         type="number"
@@ -30,7 +35,8 @@ function LifespanSelector({ lifespanOption, customYears, onOptionChange, onCusto
                         max="130"
                         value={customYears}
                         onChange={(e) => onCustomYearsChange(e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        className={inputCls}
+                        style={scheme}
                     />
                 </div>
             )}

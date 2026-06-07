@@ -1,4 +1,4 @@
-function LifeSummary({ weeksLived, weeksRemaining, totalWeeks, lifespanYears, birthdate }) {
+function LifeSummary({ weeksLived, weeksRemaining, totalWeeks, lifespanYears, birthdate, dark = false }) {
     const pctLived = totalWeeks > 0 ? ((weeksLived / totalWeeks) * 100).toFixed(1) : '0.0';
     const pctRemaining = totalWeeks > 0 ? ((weeksRemaining / totalWeeks) * 100).toFixed(1) : '0.0';
 
@@ -36,11 +36,11 @@ function LifeSummary({ weeksLived, weeksRemaining, totalWeeks, lifespanYears, bi
             {stats.map(({ label, value, sub }) => (
                 <div
                     key={label}
-                    className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm"
+                    className={`border rounded-xl px-4 py-3 shadow-sm ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-100"}`}
                 >
-                    <p className="text-xs text-gray-400 mb-1">{label}</p>
-                    <p className="text-xl font-semibold text-gray-900 leading-tight">{value}</p>
-                    {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+                    <p className={`text-xs mb-1 ${dark ? "text-slate-400" : "text-gray-400"}`}>{label}</p>
+                    <p className={`text-xl font-semibold leading-tight ${dark ? "text-slate-100" : "text-gray-900"}`}>{value}</p>
+                    {sub && <p className={`text-xs mt-0.5 ${dark ? "text-slate-400" : "text-gray-400"}`}>{sub}</p>}
                 </div>
             ))}
         </div>
