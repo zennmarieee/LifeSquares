@@ -1,88 +1,114 @@
 # LifeSquares
 
-LifeSquares is a web-based life visualization app that represents a lifespan as a grid of weekly squares.
-Each square equals one week, turning time into something tangible and reflective.
+LifeSquares is a web-based life visualization and reflection app that represents your entire lifespan as a grid of weekly squares. Each square equals one week — turning abstract time into something you can see, feel, and write about.
 
-## What it does
+---
 
-- Accepts a birthdate (date picker + typed input support)
-- Calculates weeks lived and weeks remaining from a 4,000-week model
-- Displays a life grid with per-row labels:
-	- Left: Age (starts at 0)
-	- Right: Calendar year (based on selected birth year)
-- Supports two grid modes:
-	- Standard mode: lived vs remaining
-	- Typical average life phases mode: color-coded phase ranges
+## Features
 
-## Typical phase color coding
+### 🟦 Interactive Life Grid
+Visualize every week of your life as a square. Hover for tooltips, navigate with your keyboard, and see your past and future at a glance.
 
-When enabled, the grid can display a suggested phase model:
+### 📅 Birthdate Input & Validation
+Enter your birthdate via a date picker or typed input. LifeSquares computes your weeks lived and weeks remaining automatically.
 
-- Childhood (0–12)
-- Teen & Early Adult (13–24)
-- Working Years (25–64)
-- Retirement & Later Life (65+)
+### ⏳ Lifespan Selector
+Adjust your assumed lifespan (default: 4,000 weeks / ~76.9 years) to explore different projections and see how the numbers shift.
+
+### 🎨 Life Phase Color Coding
+Toggle a suggested life phase model that colors the grid by heuristic age ranges:
+
+| Phase | Age Range |
+|---|---|
+| Childhood | 0–12 |
+| Teen & Early Adult | 13–24 |
+| Working Years | 25–64 |
+| Retirement & Later Life | 65+ |
 
 Future weeks are shown as faded in this mode.
 
-## Tech stack
+### 📓 Week Journal
+Click any week square to open a journal panel and add a short note or reflection for that specific week. Your entries are saved locally in the browser.
 
-- React
-- Vite
-- Tailwind CSS (via `@tailwindcss/vite`)
+### 📊 Life Summary & Stats
+At-a-glance metrics: weeks lived, weeks remaining, and percentage of life elapsed — grounding the visual in real numbers.
 
-## Run locally
+### 🗺️ Grid Legend
+A clear legend explains what each color and state means, with onboarding copy to orient new visitors.
 
-1. Install dependencies
+### 📝 Blog & Content Pages
+Built-in blog pages for longer-form storytelling, documentation, and reflections on the project and its ideas.
+
+### 🌗 Light / Dark Theme
+Full light and dark mode support with preference persistence across sessions.
+
+### 💾 Local Persistence
+Your birthdate, lifespan setting, journal entries, and theme preference are all saved in-browser — no account required.
+
+### ♿ Responsive & Accessible UI
+Tailwind-based responsive layout with keyboard-navigable grid cells and ARIA attributes throughout.
+
+---
+
+## Tech Stack
+
+- **React** — component-based UI
+- **Vite** — fast dev and build tooling
+- **Tailwind CSS** — utility-first styling via `@tailwindcss/vite`
+
+---
+
+## Run Locally
 
 ```bash
+# Install dependencies
 npm install
-```
 
-2. Start development server
-
-```bash
+# Start development server
 npm run dev
-```
 
-3. Build for production
-
-```bash
+# Build for production
 npm run build
-```
 
-4. Preview production build
-
-```bash
+# Preview production build
 npm run preview
 ```
 
-## Project structure
+---
+
+## Project Structure
 
 ```text
 src/
-	components/
-		AppHeader.jsx
-		BirthdateForm.jsx
-		GridLegend.jsx
-		LifeGrid.jsx
-		LifeSummary.jsx
-	pages/
-		LifeSquaresPage.jsx
-	utils/
-		lifeMath.js
-	App.jsx
-	index.css
-	main.jsx
+  components/
+    AppHeader.jsx
+    BirthdateForm.jsx
+    GridLegend.jsx
+    LifeGrid.jsx
+    LifeSummary.jsx
+    LifespanSelector.jsx
+    WeekJournalPanel.jsx
+  pages/
+    LifeSquaresPage.jsx
+    BlogPage.jsx
+  utils/
+    lifeMath.js
+    storage.js
+  App.jsx
+  index.css
+  main.jsx
 ```
+
+---
 
 ## Notes
 
-- Primary lifespan model uses `TOTAL_WEEKS = 4000`.
-- Fonts used in UI:
-	- Playfair Display (logo)
-	- Quicksand (body text)
+- Default lifespan model: `TOTAL_WEEKS = 4000` (~76.9 years)
+- Fonts: **Playfair Display** (logo), **Quicksand** (body)
+- All data is stored client-side — no backend, no accounts
 
-## Planned
+---
 
-- Weekly journal per week-square is intentionally deferred and planned for a future phase.
+## Live Demo
+
+🔗 [lifesquares.vercel.app](https://lifesquares.vercel.app)
