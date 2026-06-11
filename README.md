@@ -36,8 +36,6 @@ At-a-glance metrics: weeks lived, weeks remaining, and percentage of life elapse
 ### 🗺️ Grid Legend
 A clear legend explains what each color and state means, with onboarding copy to orient new visitors.
 
-### 📝 Blog & Content Pages
-Built-in blog pages for longer-form storytelling, documentation, and reflections on the project and its ideas.
 
 ### 🌗 Light / Dark Theme
 Full light and dark mode support with preference persistence across sessions.
